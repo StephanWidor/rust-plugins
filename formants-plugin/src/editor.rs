@@ -87,9 +87,15 @@ pub fn create_editor(params: sync::Arc<params::PluginParams>) -> Option<Box<dyn 
                                     if ui.checkbox(&mut path_enabled, "Path Mode").clicked() {
                                         params.path.set_enabled(path_enabled, setter);
                                     }
-                                    let mut limiter_enabled = params.limiter_enabled.value();
-                                    if ui.checkbox(&mut limiter_enabled, "Limiter").clicked() {
-                                        params.set_limiter_enabled(limiter_enabled, setter);
+                                    if path_enabled {
+                                        let mut path_t = params.path.t.value();
+                                        let t_response = ui.add(egui::Slider::new(
+                                            &mut path_t,
+                                            range::to_range_inclusive(&params.path.t.range()),
+                                        ));
+                                        if t_response.changed() {
+                                            params.path.set_t(path_t, setter);
+                                        }
                                     }
                                 });
                                 egui::Frame::group(ui.style())
@@ -254,7 +260,7 @@ pub fn create_editor(params: sync::Arc<params::PluginParams>) -> Option<Box<dyn 
                                         }
                                     });
                                 ui.horizontal(|ui| {
-                                    ui.add(egui::Label::new(format!("Dry")));
+                                    ui.add(egui::Label::new(format!("Dry Mix")));
                                     let mut dry_gain = params.dry_gain_db.value();
                                     let gain_response = ui.add(
                                         egui::Slider::new(
@@ -266,15 +272,9 @@ pub fn create_editor(params: sync::Arc<params::PluginParams>) -> Option<Box<dyn 
                                     if gain_response.changed() {
                                         params.set_dry_gain_db(dry_gain, setter);
                                     }
-                                    if params.path.enabled.value() {
-                                        let mut path_t = params.path.t.value();
-                                        let t_response = ui.add(egui::Slider::new(
-                                            &mut path_t,
-                                            range::to_range_inclusive(&params.path.t.range()),
-                                        ));
-                                        if t_response.changed() {
-                                            params.path.set_t(path_t, setter);
-                                        }
+                                    let mut limiter_enabled = params.limiter_enabled.value();
+                                    if ui.checkbox(&mut limiter_enabled, "Limiter").clicked() {
+                                        params.set_limiter_enabled(limiter_enabled, setter);
                                     }
                                 })
                             });
