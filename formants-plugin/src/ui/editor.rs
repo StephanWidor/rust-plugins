@@ -47,7 +47,7 @@ impl UiState {
     }
 }
 
-pub fn create_editor(params: sync::Arc<params::PluginParams>) -> Option<Box<dyn nice::Editor>> {
+pub fn create(params: sync::Arc<params::PluginParams>) -> Option<Box<dyn nice::Editor>> {
     let editor_state = params.editor_state.clone();
     let min_size = {
         let state_size = params.editor_state.size();
