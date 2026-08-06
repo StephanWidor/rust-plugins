@@ -297,7 +297,7 @@ pub fn make_gain_response_points<'a>(
     let log_frequency_length = range::get_length(&log_frequency_range);
     let x_to_log_frequency = move |x| log_frequency_range.start() + x as f32 * log_frequency_length;
     let x_to_frequency = move |x| utils::log_to_frequency(x_to_log_frequency(x));
-    let gain_db_range = -12_f32..=12_f32;
+    let gain_db_range = -60_f32..=60_f32;
     let gain_db_length = range::get_length(&gain_db_range);
     let gain_to_normalized = move |gain_db: f32| {
         let gain_clamped = gain_db.clamp(*gain_db_range.start(), *gain_db_range.end());
