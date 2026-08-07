@@ -14,10 +14,10 @@ pub struct Point {
 }
 
 impl Point {
-    pub fn new(x: f32, y: f32) -> Self {
+    pub fn new(x: f32, y: f32, index: usize) -> Self {
         Self {
             x: nice::FloatParam::new(
-                "x",
+                format!("Path x [{}]", index + 1).as_str(),
                 x,
                 nice::FloatRange::Linear {
                     min: 0_f32,
@@ -26,7 +26,7 @@ impl Point {
             )
             .with_smoother(nice::SmoothingStyle::Linear(SMOOTHING_LENGTH)),
             y: nice::FloatParam::new(
-                "y",
+                format!("Path y [{}]", index + 1).as_str(),
                 y,
                 nice::FloatRange::Linear {
                     min: 0_f32,
@@ -68,9 +68,9 @@ pub struct Path {
 impl Path {
     pub fn new() -> Self {
         Self {
-            enabled: nice::BoolParam::new("Enabled", false),
+            enabled: nice::BoolParam::new("Path Enabled", false),
             t: nice::FloatParam::new(
-                "t",
+                "Path t",
                 0.5_f32,
                 nice::FloatRange::Linear {
                     min: 0_f32,
@@ -78,10 +78,10 @@ impl Path {
                 },
             ),
             control_points: [
-                Point::new(0.1_f32, 0.6_f32),
-                Point::new(0.2_f32, 0_f32),
-                Point::new(0.5_f32, 0.8_f32),
-                Point::new(1_f32, 0.6_f32),
+                Point::new(0.1_f32, 0.6_f32, 0),
+                Point::new(0.2_f32, 0_f32, 1),
+                Point::new(0.5_f32, 0.8_f32, 2),
+                Point::new(1_f32, 0.6_f32, 3),
             ],
             spline_base: (1_f32 / 3_f32)
                 * nalgebra::matrix![
