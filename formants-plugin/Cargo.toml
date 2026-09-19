@@ -13,7 +13,6 @@ crate-type = ["cdylib", "lib"]
 [dependencies]
 assert_approx_eq = { workspace = true }
 dirs = { workspace = true }
-eframe = { workspace = true }
 egui = { workspace = true }
 egui_plot = { workspace = true }
 enum-table = { workspace = true }
