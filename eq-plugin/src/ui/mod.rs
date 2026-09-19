@@ -1,11 +1,11 @@
 pub mod colors;
 pub mod control;
-pub mod params;
 pub mod plotter;
 pub mod settings;
+pub mod state;
 pub mod utils;
 
-pub use params::Params;
+pub use state::State;
 
 use crate::presets;
 use audio_lib::fft;
@@ -24,7 +24,7 @@ pub fn draw<
     const NUM_SPECTRUM_CHANNELS: usize,
 >(
     ui: &mut egui::Ui,
-    params: &mut Params<F, NUM_BANDS>,
+    params: &mut State<F, NUM_BANDS>,
     presets: &mut presets::Presets<F, NUM_BANDS>,
     settings: &crate::ui::settings::Settings<F>,
     spectrum_data: &Option<SpectrumData<F, NUM_SPECTRUM_BINS, NUM_SPECTRUM_CHANNELS>>,

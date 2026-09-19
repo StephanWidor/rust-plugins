@@ -6,16 +6,16 @@ members = ["audio-lib", "eq-plugin", "formants-plugin", "xtask"]
 assert_approx_eq = "1.1"
 atomic_enum = "0.3"
 dirs = "7.0"
-egui = "0.35"
-egui_plot = "0.36"
+egui = "0.36"
+egui_plot = "0.37"
 enum-table = "4.0"
 more-asserts = "0.3"
 nalgebra = "0.35"
-nice-plug = { version = "0.1", features = [
+nice-plug = { version = "0.4", features = [
     "assert_process_allocs",
     "standalone",
 ] }
-nice-plug-egui = "0.2"
+nice-plug-egui = "0.5"
 num = "0.4"
 num-traits = "0.2"
 rustfft = "6.4"

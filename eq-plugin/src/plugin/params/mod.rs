@@ -19,9 +19,6 @@ pub struct PluginParams<
     const NUM_CHANNELS: usize,
     const ANALYZER_NUM_BINS: usize,
 > {
-    #[persist = "editor_state"]
-    pub editor_state: sync::Arc<nice_plug_egui::EguiState>,
-
     #[nested(array, group = "eq_params")]
     pub eq_params: [EqParams; NUM_BANDS],
 
@@ -33,6 +30,8 @@ pub struct PluginParams<
     #[nested(group = "show_params")]
     pub show_params: ShowParams,
 
+    pub editor_open: atomic::AtomicBool,
+
     pub analyzer_data:
         fft::signal_analyzer::SharedData<f32, { ANALYZER_NUM_BINS }, { NUM_CHANNELS }>,
 }
@@ -43,7 +42,6 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS:
     pub fn new(settings: &Settings<NUM_BANDS>) -> Self {
         let eq_ranges = settings.ui.eq_ranges.clone();
         Self {
-            editor_state: nice_plug_egui::EguiState::from_size(1000, 700),
             eq_params: std::array::from_fn(|index| {
                 EqParams::from_eq(
                     format!(" [{}]", index + 1).as_str(),
@@ -60,6 +58,7 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS:
             ),
             sample_rate: nice::AtomicF32::new(settings.init_sample_rate),
             show_params: ShowParams::from_options(&settings.ui.init_show_options),
+            editor_open: atomic::AtomicBool::new(false),
             analyzer_data: fft::signal_analyzer::SharedData::new(settings.init_sample_rate),
         }
     }

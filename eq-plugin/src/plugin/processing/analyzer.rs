@@ -35,12 +35,11 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const NUM_BINS: usize>
     pub fn process(&mut self, buffer: &nice::Buffer) {
         let analyzer_data = &self.plugin_params.analyzer_data;
 
-        if self.plugin_params.editor_state.is_open()
-            && self
-                .plugin_params
-                .show_params
-                .signal_gain_spectrum
-                .load(atomic::Ordering::Relaxed)
+        if self
+            .plugin_params
+            .show_params
+            .signal_gain_spectrum
+            .load(atomic::Ordering::Relaxed)
         {
             self.analyzer.push(
                 buffer.as_slice_immutable(),

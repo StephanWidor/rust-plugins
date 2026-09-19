@@ -113,7 +113,7 @@ pub fn add_preset_controls<F: audio_utils::Float, const NUM_BANDS: usize>(
     ui: &mut egui::Ui,
     width: f32,
     outer_margin: f32,
-    params: &mut Params<F, NUM_BANDS>,
+    params: &mut State<F, NUM_BANDS>,
     presets: &mut presets::Presets<F, NUM_BANDS>,
 ) {
     egui::Frame::group(ui.style())
@@ -202,7 +202,7 @@ pub fn add_preset_controls<F: audio_utils::Float, const NUM_BANDS: usize>(
 
 fn add_new_preset_popup<F: audio_utils::Float, const NUM_BANDS: usize>(
     ui: &mut egui::Ui,
-    params: &mut Params<F, NUM_BANDS>,
+    params: &mut State<F, NUM_BANDS>,
     presets: &mut presets::Presets<F, NUM_BANDS>,
 ) {
     if let Some(new_preset_name) = params.new_preset_name.as_mut() {

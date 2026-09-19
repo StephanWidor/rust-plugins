@@ -4,9 +4,6 @@ use std::sync::atomic;
 
 #[derive(nice::Params)]
 pub struct PluginParams {
-    #[persist = "editor_state"]
-    pub editor_state: std::sync::Arc<nice_plug_egui::EguiState>,
-
     #[id = "x"]
     pub x: nice::FloatParam,
 
@@ -30,7 +27,6 @@ pub struct PluginParams {
 impl PluginParams {
     pub fn new() -> Self {
         Self {
-            editor_state: nice_plug_egui::EguiState::from_size(450, 500),
             x: nice::FloatParam::new(
                 "x",
                 0.5_f32,

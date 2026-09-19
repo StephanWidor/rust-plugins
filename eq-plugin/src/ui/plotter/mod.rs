@@ -14,7 +14,7 @@ pub fn add_plots<
 >(
     ui: &mut egui::Ui,
     available_size: &egui::Vec2,
-    params: &mut Params<F, NUM_BANDS>,
+    params: &mut State<F, NUM_BANDS>,
     settings: &crate::ui::settings::Settings<F>,
     spectrum_data: &Option<SpectrumData<F, NUM_SPECTRUM_BINS, NUM_SPECTRUM_CHANNELS>>,
 ) {

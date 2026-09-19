@@ -13,6 +13,7 @@ pub struct Plugin<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALY
         processing::analyzer::Analyzer<{ NUM_BANDS }, { NUM_CHANNELS }, { ANALYZER_NUM_BINS }>,
     ui_settings: ui::Settings,
     persistence_dir: std::path::PathBuf,
+    repaint_notifier: nice_plug_egui::RepaintNotifier,
 }
 
 impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS: usize>
@@ -37,6 +38,7 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS:
             analyzer: processing::analyzer::Analyzer::new(params.clone(), analyzer_coefficients),
             ui_settings: app_settings.ui.clone(),
             persistence_dir: app_settings.persistence_dir.clone(),
+            repaint_notifier: nice_plug_egui::RepaintNotifier::new(),
         }
     }
 
@@ -98,6 +100,8 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS:
 
     const SAMPLE_ACCURATE_AUTOMATION: bool = true;
 
+    type Editor =
+        nice_plug_egui::EguiEditor<ui::editor::Editor<NUM_BANDS, NUM_CHANNELS, ANALYZER_NUM_BINS>>;
     type SysExMessage = ();
     type BackgroundTask = ();
 
@@ -105,13 +109,22 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS:
         self.params.clone()
     }
 
-    fn initialize(
+    fn editor(&mut self, _async_executor: nice::AsyncExecutor<Self>) -> Option<Self::Editor> {
+        ui::editor::create(
+            self.params.clone(),
+            self.presets.clone(),
+            self.ui_settings.clone(),
+            self.repaint_notifier.clone(),
+        )
+    }
+
+    fn activate(
         &mut self,
         _audio_io_layout: &nice::AudioIOLayout,
-        _buffer_config: &nice::BufferConfig,
-        _context: &mut impl nice::InitContext<Self>,
+        buffer_config: &nice::BufferConfig,
+        _context: &mut impl nice::ActivateContext<Self>,
     ) -> bool {
-        let sample_rate = _buffer_config.sample_rate as f32;
+        let sample_rate = buffer_config.sample_rate as f32;
         self.params
             .sample_rate
             .store(sample_rate, atomic::Ordering::Relaxed);
@@ -125,19 +138,11 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS:
         _context: &mut impl nice::ProcessContext<Self>,
     ) -> nice::ProcessStatus {
         self.processor.process(buffer);
-        self.analyzer.process(buffer);
+        if self.params.editor_open.load(atomic::Ordering::Relaxed) {
+            self.analyzer.process(buffer);
+            self.repaint_notifier.request_repaint();
+        }
         nice::ProcessStatus::Normal
-    }
-
-    fn editor(
-        &mut self,
-        _async_executor: nice::AsyncExecutor<Self>,
-    ) -> Option<Box<dyn nice::Editor>> {
-        ui::editor::create_editor(
-            self.params.clone(),
-            self.presets.clone(),
-            self.ui_settings.clone(),
-        )
     }
 }
 

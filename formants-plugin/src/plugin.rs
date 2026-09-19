@@ -12,6 +12,7 @@ type Limiter = limiter::SimpleLimiter<limiter::gain::SoftKnee<f32>, 500, f32>;
 
 pub struct Plugin {
     params: sync::Arc<params::PluginParams>,
+    repaint_notifier: nice_plug_egui::RepaintNotifier,
     filters: [ThreeBandFilter; NUM_CHANNELS],
     limiters: [Limiter; NUM_CHANNELS],
 }
@@ -20,6 +21,7 @@ impl Plugin {
     pub fn new() -> Self {
         Self {
             params: sync::Arc::new(params::PluginParams::new()),
+            repaint_notifier: nice_plug_egui::RepaintNotifier::new(),
             filters: std::array::from_fn(|_| {
                 std::array::from_fn(|_| Filter::new(biquad::coefficients::Coefficients::muted()))
             }),
@@ -62,6 +64,7 @@ impl nice::Plugin for Plugin {
 
     const SAMPLE_ACCURATE_AUTOMATION: bool = true;
 
+    type Editor = nice_plug_egui::EguiEditor<ui::editor::Editor>;
     type SysExMessage = ();
     type BackgroundTask = ();
 
@@ -69,13 +72,17 @@ impl nice::Plugin for Plugin {
         self.params.clone()
     }
 
-    fn initialize(
+    fn editor(&mut self, _async_executor: nice::AsyncExecutor<Self>) -> Option<Self::Editor> {
+        ui::editor::create(self.params.clone(), self.repaint_notifier.clone())
+    }
+
+    fn activate(
         &mut self,
         _audio_io_layout: &nice::AudioIOLayout,
-        _buffer_config: &nice::BufferConfig,
-        context: &mut impl nice::InitContext<Self>,
+        buffer_config: &nice::BufferConfig,
+        context: &mut impl nice::ActivateContext<Self>,
     ) -> bool {
-        let sample_rate = _buffer_config.sample_rate as f32;
+        let sample_rate = buffer_config.sample_rate as f32;
         self.params
             .sample_rate
             .store(sample_rate, atomic::Ordering::Relaxed);
@@ -118,13 +125,6 @@ impl nice::Plugin for Plugin {
             }
         }
         nice::ProcessStatus::Normal
-    }
-
-    fn editor(
-        &mut self,
-        _async_executor: nice::AsyncExecutor<Self>,
-    ) -> Option<Box<dyn nice::Editor>> {
-        ui::editor::create(self.params.clone())
     }
 }
 

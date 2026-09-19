@@ -7,7 +7,7 @@ pub mod eqs;
 pub fn add<F: audio_utils::Float + egui::emath::Numeric, const NUM_BANDS: usize>(
     ui: &mut egui::Ui,
     size: egui::Vec2,
-    params: &mut Params<F, NUM_BANDS>,
+    params: &mut State<F, NUM_BANDS>,
     presets: &mut presets::Presets<F, NUM_BANDS>,
     settings: &Settings<F>,
     spectrum_available: bool,
