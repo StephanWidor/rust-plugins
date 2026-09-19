@@ -1,6 +1,6 @@
-use enum_table::Enumable;
+use enum_table::Enumerable;
 
-#[derive(Debug, PartialEq, Clone, Copy, Enumable, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, PartialEq, Clone, Copy, Enumerable, serde::Serialize, serde::Deserialize)]
 pub enum MultibandType {
     Sequential,
     ParallelSum,
@@ -8,7 +8,7 @@ pub enum MultibandType {
 }
 
 impl MultibandType {
-    pub const ALL: &'static [MultibandType] = Enumable::VARIANTS;
+    pub const ALL: &'static [MultibandType] = Enumerable::VARIANTS;
     pub const VARIANT_COUNT: usize = Self::COUNT;
 
     pub const ALL_NAMES: [&'static str; Self::COUNT] =

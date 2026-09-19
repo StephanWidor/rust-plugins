@@ -5,11 +5,11 @@ members = ["audio-lib", "eq-plugin", "formants-plugin", "xtask"]
 [workspace.dependencies]
 assert_approx_eq = "1.1"
 atomic_enum = "0.3"
-dirs = "6.0"
+dirs = "7.0"
 eframe = "0.35"
 egui = "0.35"
 egui_plot = "0.36"
-enum-table = "3.0"
+enum-table = "4.0"
 more-asserts = "0.3"
 nalgebra = "0.35"
 nice-plug = { version = "0.1", features = [

@@ -1,6 +1,6 @@
-use enum_table::Enumable;
+use enum_table::Enumerable;
 
-#[derive(Debug, PartialEq, Clone, Copy, Enumable, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, PartialEq, Clone, Copy, Enumerable, serde::Serialize, serde::Deserialize)]
 pub enum EqType {
     Volume,
     LowPass,
@@ -15,7 +15,7 @@ pub enum EqType {
 }
 
 impl EqType {
-    pub const ALL: &'static [EqType] = Enumable::VARIANTS;
+    pub const ALL: &'static [EqType] = Enumerable::VARIANTS;
     pub const VARIANT_COUNT: usize = Self::COUNT;
 
     pub const ALL_NAMES: [&'static str; Self::COUNT] = [
