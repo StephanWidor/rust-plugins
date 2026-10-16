@@ -1,0 +1,9 @@
+[package]
+name = "nice-utils"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+egui = { workspace = true }
+nice-plug = { workspace = true }
+nice-plug-egui = { workspace = true }

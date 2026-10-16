@@ -40,15 +40,6 @@ impl Point {
     pub fn get<F: audio_lib::utils::Float>(&self) -> [F; 2] {
         [F::from_float(self.x.value()), F::from_float(self.y.value())]
     }
-
-    pub fn set(&self, x: f32, y: f32, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.x);
-        setter.begin_set_parameter(&self.y);
-        setter.set_parameter(&self.x, x);
-        setter.set_parameter(&self.y, y);
-        setter.end_set_parameter(&self.x);
-        setter.end_set_parameter(&self.y);
-    }
 }
 
 #[derive(nice::Params)]
@@ -92,31 +83,8 @@ impl Path {
         }
     }
 
-    pub fn set_enabled(&self, enabled: bool, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.enabled);
-        setter.set_parameter(&self.enabled, enabled);
-        setter.end_set_parameter(&self.enabled);
-    }
-
-    pub fn set_t(&self, t: f32, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.t);
-        setter.set_parameter(&self.t, t);
-        setter.end_set_parameter(&self.t);
-    }
-
     pub fn get_point<F: audio_lib::utils::Float>(&self) -> [F; 2] {
         Self::point_from_coefficients_and_t(&self.coefficients_matrix(), self.t.value())
-    }
-
-    /// coefficients[0] + coefficients[1] * t + coefficients[2] * t^2 + ... + coefficients[n-1] * t^(n-1)
-    /// (calculated via horner scheme)
-    pub fn calc_horner(coefficients: &[f32], t: f32) -> f32 {
-        let n = coefficients.len();
-        let mut accumulator = coefficients[n - 1];
-        for j in 2..=n {
-            accumulator = accumulator * t + coefficients[n - j];
-        }
-        accumulator
     }
 
     pub fn point_from_coefficients_and_t<F: audio_lib::utils::Float>(
@@ -135,6 +103,17 @@ impl Path {
 
     pub fn coefficients_matrix(&self) -> SMatrix<f32, NUM_CONTROL_POINTS, 2> {
         self.spline_base * self.geometry_matrix()
+    }
+
+    /// coefficients[0] + coefficients[1] * t + coefficients[2] * t^2 + ... + coefficients[n-1] * t^(n-1)
+    /// (calculated via horner scheme)
+    fn calc_horner(coefficients: &[f32], t: f32) -> f32 {
+        let n = coefficients.len();
+        let mut accumulator = coefficients[n - 1];
+        for j in 2..=n {
+            accumulator = accumulator * t + coefficients[n - j];
+        }
+        accumulator
     }
 
     fn geometry_matrix(&self) -> SMatrix<f32, NUM_CONTROL_POINTS, 2> {

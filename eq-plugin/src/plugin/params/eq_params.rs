@@ -86,38 +86,4 @@ impl EqParams {
             makeup_gain: eq::Gain::Db(F::from_float(self.makeup_gain_db.value())),
         }
     }
-
-    pub fn set_gain_db<F: utils::Float>(&self, gain_db: F, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.gain_db);
-        setter.set_parameter(&self.gain_db, gain_db.to_f32().unwrap());
-        setter.end_set_parameter(&self.gain_db);
-    }
-
-    pub fn set_log_frequency<F: utils::Float>(
-        &self,
-        log_frequency: F,
-        setter: &nice::ParamSetter<'_>,
-    ) {
-        setter.begin_set_parameter(&self.log_frequency);
-        setter.set_parameter(&self.log_frequency, log_frequency.to_f32().unwrap());
-        setter.end_set_parameter(&self.log_frequency);
-    }
-
-    pub fn set_q<F: utils::Float>(&self, q: F, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.q);
-        setter.set_parameter(&self.q, q.to_f32().unwrap());
-        setter.end_set_parameter(&self.q);
-    }
-
-    pub fn set_eq_type(&self, eq_type: eq::EqType, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.eq_type);
-        setter.set_parameter(&self.eq_type, eq_type.into());
-        setter.end_set_parameter(&self.eq_type);
-    }
-
-    pub fn set_makeup_gain_db<F: utils::Float>(&self, gain_db: F, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.makeup_gain_db);
-        setter.set_parameter(&self.makeup_gain_db, gain_db.to_f32().unwrap());
-        setter.end_set_parameter(&self.makeup_gain_db);
-    }
 }

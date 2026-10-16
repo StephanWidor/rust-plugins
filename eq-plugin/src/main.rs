@@ -1,5 +1,5 @@
 use eq_plugin::plugin::*;
 
 fn main() {
-    nice::nice_export_standalone::<Plugin>();
+    nice_plug::nice_export_standalone::<Plugin>();
 }

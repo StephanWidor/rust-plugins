@@ -29,22 +29,6 @@ impl Plugin {
         }
     }
 
-    const AUDIO_IO_LAYOUTS_INSTANCE: [nice::AudioIOLayout; NUM_CHANNELS] =
-        Self::make_audio_layouts();
-
-    const fn make_audio_layouts() -> [nice::AudioIOLayout; NUM_CHANNELS] {
-        // seems like std::array::from_fn doesn't work as const :-(
-        let mut layouts: [nice::AudioIOLayout; NUM_CHANNELS] =
-            [nice::AudioIOLayout::const_default(); NUM_CHANNELS];
-        let mut i = 0;
-        while i < NUM_CHANNELS {
-            let num_channels = (NUM_CHANNELS - i) as u32;
-            layouts[i].main_input_channels = nice::NonZeroU32::new(num_channels);
-            layouts[i].main_output_channels = nice::NonZeroU32::new(num_channels);
-            i += 1;
-        }
-        layouts
-    }
 }
 
 impl Default for Plugin {
@@ -59,9 +43,8 @@ impl nice::Plugin for Plugin {
     const URL: &'static str = env!("CARGO_PKG_HOMEPAGE");
     const EMAIL: &'static str = "stephan@widor.online";
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
-
-    const AUDIO_IO_LAYOUTS: &'static [nice::AudioIOLayout] = &Self::AUDIO_IO_LAYOUTS_INSTANCE;
-
+    const AUDIO_IO_LAYOUTS: &'static [nice::AudioIOLayout] =
+        &nice_utils::make_audio_layouts::<NUM_CHANNELS>();
     const SAMPLE_ACCURATE_AUTOMATION: bool = true;
 
     type Editor = nice_plug_egui::EguiEditor<ui::editor::Editor>;

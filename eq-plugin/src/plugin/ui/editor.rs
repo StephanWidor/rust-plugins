@@ -123,8 +123,11 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS:
 
                 let setter = nice_gui_context.param_setter();
                 if self.ui_state.multiband_eq.processing_type != backup_eqs.processing_type {
-                    self.params
-                        .set_multiband_type(self.ui_state.multiband_eq.processing_type, &setter);
+                    nice_utils::set_param(
+                        &self.params.multiband_type,
+                        self.ui_state.multiband_eq.processing_type,
+                        &setter,
+                    );
                 }
                 for ((new_eq, old_eq), band_params) in self
                     .ui_state
@@ -135,19 +138,27 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS:
                     .zip(self.params.eq_params.as_ref())
                 {
                     if new_eq.gain.db() != old_eq.gain.db() {
-                        band_params.set_gain_db(new_eq.gain.db(), &setter);
+                        nice_utils::set_param(&band_params.gain_db, new_eq.gain.db(), &setter);
                     }
                     if new_eq.frequency.log_hz() != old_eq.frequency.log_hz() {
-                        band_params.set_log_frequency(new_eq.frequency.log_hz(), &setter);
+                        nice_utils::set_param(
+                            &band_params.log_frequency,
+                            new_eq.frequency.log_hz(),
+                            &setter,
+                        );
                     }
                     if new_eq.q != old_eq.q {
-                        band_params.set_q(new_eq.q, &setter);
+                        nice_utils::set_param(&band_params.q, new_eq.q, &setter);
                     }
                     if new_eq.eq_type != old_eq.eq_type {
-                        band_params.set_eq_type(new_eq.eq_type, &setter);
+                        nice_utils::set_param(&band_params.eq_type, new_eq.eq_type, &setter);
                     }
                     if new_eq.makeup_gain != old_eq.makeup_gain {
-                        band_params.set_makeup_gain_db(new_eq.makeup_gain.db(), &setter);
+                        nice_utils::set_param(
+                            &band_params.makeup_gain_db,
+                            new_eq.makeup_gain.db(),
+                            &setter,
+                        );
                     }
                 }
 

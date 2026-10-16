@@ -11,7 +11,7 @@ pub use eq_params::EqParams;
 pub use show_params::ShowParams;
 
 // hm, can we somehow get rid of this without destroying the nice::Enum and nice::Params derive?
-use nice_plug::params::Params;
+use nice::Params;
 
 #[derive(nice::Params)]
 pub struct PluginParams<
@@ -68,15 +68,5 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS:
             eqs: std::array::from_fn(|index| self.eq_params[index].to_eq()),
             processing_type: self.multiband_type.value().into(),
         }
-    }
-
-    pub fn set_multiband_type(
-        &self,
-        multiband_type: eq::MultibandType,
-        setter: &nice::ParamSetter<'_>,
-    ) {
-        setter.begin_set_parameter(&self.multiband_type);
-        setter.set_parameter(&self.multiband_type, multiband_type.into());
-        setter.end_set_parameter(&self.multiband_type);
     }
 }

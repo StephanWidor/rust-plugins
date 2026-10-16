@@ -1,10 +1,9 @@
-pub mod params;
-pub mod plugin;
-pub mod range;
-pub mod ui;
+mod params;
+mod plugin;
+mod ui;
 
-pub use nice_plug::prelude as nice;
+use nice_plug::prelude as nice;
 pub use plugin::Plugin;
 
-nice::nice_export_clap!(Plugin);
-nice::nice_export_vst3!(Plugin);
+nice_plug::nice_export_clap!(Plugin);
+nice_plug::nice_export_vst3!(Plugin);

@@ -61,30 +61,6 @@ impl PluginParams {
         }
     }
 
-    pub fn set_x(&self, x: f32, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.x);
-        setter.set_parameter(&self.x, x);
-        setter.end_set_parameter(&self.x);
-    }
-
-    pub fn set_y(&self, y: f32, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.y);
-        setter.set_parameter(&self.y, y);
-        setter.end_set_parameter(&self.y);
-    }
-
-    pub fn set_dry_gain_db(&self, gain_db: f32, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.dry_gain_db);
-        setter.set_parameter(&self.dry_gain_db, gain_db);
-        setter.end_set_parameter(&self.dry_gain_db);
-    }
-
-    pub fn set_limiter_enabled(&self, enabled: bool, setter: &nice::ParamSetter<'_>) {
-        setter.begin_set_parameter(&self.limiter_enabled);
-        setter.set_parameter(&self.limiter_enabled, enabled);
-        setter.end_set_parameter(&self.limiter_enabled);
-    }
-
     pub fn get_multiband_coefficients(&self) -> [biquad::coefficients::Coefficients<f32>; 3] {
         use biquad::coefficients::Coefficients;
         let frequencies = self.get_frequencies();

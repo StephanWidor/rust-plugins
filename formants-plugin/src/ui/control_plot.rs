@@ -136,16 +136,21 @@ impl ControlPlot {
                         if self.hovered_control_point_index < usize::MAX
                             && let Some(drag_position) = plot_response.inner
                         {
-                            params.path.control_points[self.hovered_control_point_index].set(
-                                drag_position.x as f32,
-                                drag_position.y as f32,
+                            let control_points =
+                                &params.path.control_points[self.hovered_control_point_index];
+                            nice_utils::set_params(
+                                [&control_points.x, &control_points.y],
+                                [drag_position.x as f32, drag_position.y as f32],
                                 setter,
                             );
                         }
                     } else {
                         if let Some(drag_position) = plot_response.inner {
-                            params.set_x(drag_position.x as f32, setter);
-                            params.set_y(drag_position.y as f32, setter);
+                            nice_utils::set_params(
+                                [&params.x, &params.y],
+                                [drag_position.x as f32, drag_position.y as f32],
+                                setter,
+                            );
                         }
                     }
                 } else {
@@ -165,11 +170,11 @@ fn make_gain_response_points<'a>(
             sample_rate,
         ));
     let log_frequency_range = utils::frequency_to_log(20.0)..=utils::frequency_to_log(20000.0);
-    let log_frequency_length = range::get_length(&log_frequency_range);
+    let log_frequency_length = utils::get_length(&log_frequency_range);
     let x_to_log_frequency = move |x| log_frequency_range.start() + x as f32 * log_frequency_length;
     let x_to_frequency = move |x| utils::log_to_frequency(x_to_log_frequency(x));
     let gain_db_range = -60_f32..=60_f32;
-    let gain_db_length = range::get_length(&gain_db_range);
+    let gain_db_length = utils::get_length(&gain_db_range);
     let gain_to_normalized = move |gain_db: f32| {
         let gain_clamped = gain_db.clamp(*gain_db_range.start(), *gain_db_range.end());
         ((gain_clamped - gain_db_range.start()) / gain_db_length) as f64

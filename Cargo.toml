@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["audio-lib", "eq-plugin", "formants-plugin", "xtask"]
+members = ["audio-lib", "eq-plugin", "formants-plugin", "nice-utils", "xtask"]
 
 [workspace.dependencies]
 assert_approx_eq = "1.1"
@@ -26,7 +26,7 @@ smallvec = "1.15"
 
 app-lib = { path = "app-lib" }
 audio-lib = { path = "audio-lib" }
-egui-lib = { path = "egui-lib" }
+nice-utils = { path = "nice-utils" }
 
 [profile.release]
 lto = "thin"

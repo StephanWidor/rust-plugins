@@ -57,6 +57,10 @@ impl Float for f64 {
     const ONE_TWENTIETH: Self = 0.05;
 }
 
+pub fn get_length<F: Float>(range: &std::ops::RangeInclusive<F>) -> F {
+    *range.end() - *range.start()
+}
+
 pub fn is_power_of_two(i: usize) -> bool {
     i != 0 && (i & (i - 1)) == 0
 }

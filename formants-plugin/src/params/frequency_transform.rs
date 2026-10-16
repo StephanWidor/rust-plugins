@@ -1,6 +1,4 @@
 use audio_lib::utils;
-
-use super::*;
 use std::ops::RangeInclusive;
 
 /// For transforming/distorting coordinates (x,y) in [0;1]^2 into formant frequencies
@@ -98,7 +96,7 @@ impl FrequencyTransform {
     fn frequency_ratio(&self, frequency: f32, index: usize) -> f32 {
         assert!(index < 2);
         ((frequency - self.frequency_ranges[index].start())
-            / range::get_length(&self.frequency_ranges[index]))
+            / utils::get_length(&self.frequency_ranges[index]))
         .clamp(0_f32, 1_f32)
     }
 }

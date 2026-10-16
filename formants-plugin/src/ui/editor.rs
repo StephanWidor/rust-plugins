@@ -59,28 +59,26 @@ impl nice_plug_egui::NiceEguiApp for Editor {
         let Some(nice_gui_context) = self.nice_gui_context.as_mut() else {
             return;
         };
+        let param_setter = &nice_gui_context.param_setter();
         egui::Frame::new()
             .inner_margin(egui::Margin::same(20))
             .show(ui, |ui| {
                 ui.vertical(|ui| {
                     ui.horizontal(|ui| {
-                        let mut path_enabled = self.params.path.enabled.value();
-                        if ui.checkbox(&mut path_enabled, "Path Mode").clicked() {
-                            self.params
-                                .path
-                                .set_enabled(path_enabled, &nice_gui_context.param_setter());
-                        }
+                        let path_enabled = nice_utils::egui::param_checkbox(
+                            ui,
+                            &self.params.path.enabled,
+                            param_setter,
+                            "Path Mode",
+                        );
                         if path_enabled {
-                            let mut path_t = self.params.path.t.value();
-                            let t_response = ui.add(egui::Slider::new(
-                                &mut path_t,
-                                range::to_range_inclusive(&self.params.path.t.range()),
-                            ));
-                            if t_response.changed() {
-                                self.params
-                                    .path
-                                    .set_t(path_t, &nice_gui_context.param_setter());
-                            }
+                            nice_utils::egui::param_slider(
+                                ui,
+                                &self.params.path.t,
+                                param_setter,
+                                "",
+                                "",
+                            );
                         }
                     });
 
@@ -94,25 +92,19 @@ impl nice_plug_egui::NiceEguiApp for Editor {
 
                     ui.horizontal(|ui| {
                         ui.add(egui::Label::new(format!("Dry Mix")));
-                        let mut dry_gain = self.params.dry_gain_db.value();
-                        let gain_response = ui.add(
-                            egui::Slider::new(
-                                &mut dry_gain,
-                                range::to_range_inclusive(&self.params.dry_gain_db.range()),
-                            )
-                            .suffix("dB"),
+                        nice_utils::egui::param_slider(
+                            ui,
+                            &self.params.dry_gain_db,
+                            param_setter,
+                            "",
+                            "dB",
                         );
-                        if gain_response.changed() {
-                            self.params
-                                .set_dry_gain_db(dry_gain, &nice_gui_context.param_setter());
-                        }
-                        let mut limiter_enabled = self.params.limiter_enabled.value();
-                        if ui.checkbox(&mut limiter_enabled, "Limiter").clicked() {
-                            self.params.set_limiter_enabled(
-                                limiter_enabled,
-                                &nice_gui_context.param_setter(),
-                            );
-                        }
+                        nice_utils::egui::param_checkbox(
+                            ui,
+                            &self.params.limiter_enabled,
+                            param_setter,
+                            "Limiter",
+                        );
                     })
                 });
             });
