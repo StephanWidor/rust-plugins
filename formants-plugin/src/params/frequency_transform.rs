@@ -95,16 +95,6 @@ impl FrequencyTransform {
         None
     }
 
-    // swdebug: remove
-    pub fn y_from_x_and_frequencies(&self, x: f32, frequencies: [f32; 2]) -> Option<f32> {
-        if self.v == 0_f32 {
-            return None;
-        }
-        let w =
-            self.c[0] * (frequencies[1] - self.m0[1]) - self.c[1] * (frequencies[0] - self.m0[0]);
-        Some(self.u * x / self.v + w / self.v)
-    }
-
     fn frequency_ratio(&self, frequency: f32, index: usize) -> f32 {
         assert!(index < 2);
         ((frequency - self.frequency_ranges[index].start())
@@ -133,22 +123,6 @@ mod test {
             let frequencies = transform.coordinates_to_frequencies(x, y);
             for j in 0..2 {
                 assert_approx_eq!(bound[j], frequencies[j]);
-            }
-        }
-    }
-
-    #[test]
-    fn test_y_from_x() {
-        let transform = FrequencyTransform::default();
-        const EPS: f32 = 1e-5_f32;
-        for i in 0..=10 {
-            for j in 0..=10 {
-                let [x, y] = [i as f32 * 0.1, j as f32 * 0.1];
-                let frequencies = transform.coordinates_to_frequencies(x, y);
-                let y_from_x = transform.y_from_x_and_frequencies(x, frequencies);
-                assert!(y_from_x.is_some());
-                let diff = (y - y_from_x.unwrap()).abs();
-                assert!(diff <= EPS);
             }
         }
     }
