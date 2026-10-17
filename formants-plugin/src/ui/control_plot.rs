@@ -187,10 +187,10 @@ fn make_gain_response_points<'a>(
 }
 
 fn make_path_points<'a>(path: &params::Path) -> egui_plot::PlotPoints<'a> {
-    let c = path.coefficients_matrix();
+    let path_function = path.make_function();
     egui_plot::PlotPoints::from_parametric_callback(
         move |t| {
-            let [x, y] = params::Path::point_from_coefficients_and_t(&c, t as f32);
+            let [x, y] = path_function(t);
             (x, y)
         },
         0.0..=1.0,

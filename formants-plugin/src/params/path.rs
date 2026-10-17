@@ -52,8 +52,6 @@ pub struct Path {
 
     #[nested(array, group = "control_points")]
     pub control_points: [Point; NUM_CONTROL_POINTS],
-
-    spline_base: Matrix4<f32>,
 }
 
 impl Path {
@@ -74,20 +72,19 @@ impl Path {
                 Point::new(0.5_f32, 0.8_f32, 2),
                 Point::new(1_f32, 0.6_f32, 3),
             ],
-            spline_base: (1_f32 / 3_f32)
-                * nalgebra::matrix![
-                    3_f32,   0_f32,   0_f32,   0_f32;
-                    -19_f32, 24_f32,  -8_f32,  3_f32;
-                    32_f32,  -56_f32, 40_f32,  -16_f32;
-                    -16_f32, 32_f32,  -32_f32, 16_f32],
         }
     }
 
-    pub fn get_point<F: audio_lib::utils::Float>(&self) -> [F; 2] {
+    pub fn get_current_point<F: audio_lib::utils::Float>(&self) -> [F; 2] {
         Self::point_from_coefficients_and_t(&self.coefficients_matrix(), self.t.value())
     }
 
-    pub fn point_from_coefficients_and_t<F: audio_lib::utils::Float>(
+    pub fn make_function<F: audio_lib::utils::Float>(&self) -> impl Fn(F) -> [F; 2] {
+        let coefficients = self.coefficients_matrix();
+        move |t: F| Self::point_from_coefficients_and_t(&coefficients, t.cast())
+    }
+
+    fn point_from_coefficients_and_t<F: audio_lib::utils::Float>(
         coefficients: &SMatrix<f32, NUM_CONTROL_POINTS, 2>,
         t: f32,
     ) -> [F; 2] {
@@ -101,8 +98,8 @@ impl Path {
         ]
     }
 
-    pub fn coefficients_matrix(&self) -> SMatrix<f32, NUM_CONTROL_POINTS, 2> {
-        self.spline_base * self.geometry_matrix()
+    fn coefficients_matrix(&self) -> SMatrix<f32, NUM_CONTROL_POINTS, 2> {
+        Self::INTERPOLATION_BASE * self.control_matrix()
     }
 
     /// coefficients[0] + coefficients[1] * t + coefficients[2] * t^2 + ... + coefficients[n-1] * t^(n-1)
@@ -116,7 +113,7 @@ impl Path {
         accumulator
     }
 
-    fn geometry_matrix(&self) -> SMatrix<f32, NUM_CONTROL_POINTS, 2> {
+    fn control_matrix(&self) -> SMatrix<f32, NUM_CONTROL_POINTS, 2> {
         SMatrix::from_fn(|row, col| {
             let control_point = &self.control_points[row];
             if col == 0 {
@@ -126,4 +123,10 @@ impl Path {
             }
         })
     }
+
+    const INTERPOLATION_BASE: Matrix4<f32> = nalgebra::matrix![
+        1_f32,           0_f32,         0_f32,           0_f32;
+       -19_f32 / 3_f32,  8_f32,          -8_f32/3_f32,   1_f32;
+        32_f32 / 3_f32, -56_f32 / 3_f32,  40_f32/3_f32, -16_f32 / 3_f32;
+       -16_f32 / 3_f32,  32_f32 / 3_f32, -32_f32/3_f32,  16_f32 / 3_f32];
 }
