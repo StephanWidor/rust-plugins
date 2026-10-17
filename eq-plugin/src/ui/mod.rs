@@ -24,7 +24,7 @@ pub fn draw<
     const NUM_SPECTRUM_CHANNELS: usize,
 >(
     ui: &mut egui::Ui,
-    params: &mut State<F, NUM_BANDS>,
+    ui_state: &mut State<F, NUM_BANDS>,
     presets: &mut presets::Presets<F, NUM_BANDS>,
     settings: &crate::ui::settings::Settings<F>,
     spectrum_data: &Option<SpectrumData<F, NUM_SPECTRUM_BINS, NUM_SPECTRUM_CHANNELS>>,
@@ -36,20 +36,20 @@ pub fn draw<
         control::add(
             ui,
             egui::Vec2::new(control_width, ui_size.y),
-            params,
+            ui_state,
             presets,
             settings,
             spectrum_data.is_some(),
         );
 
-        if !(params.show_options.gain
-            || params.show_options.phase
-            || params.show_options.impulse_response
-            || params.show_options.poles_and_zeros)
+        if !(ui_state.show_options.gain
+            || ui_state.show_options.phase
+            || ui_state.show_options.impulse_response
+            || ui_state.show_options.poles_and_zeros)
         {
             return;
         }
         let available_size = egui::Vec2::new(0.96_f32 * (ui_size.x - control_width), ui_size.y);
-        plotter::add_plots(ui, &available_size, params, settings, spectrum_data);
+        plotter::add_plots(ui, &available_size, ui_state, settings, spectrum_data);
     });
 }

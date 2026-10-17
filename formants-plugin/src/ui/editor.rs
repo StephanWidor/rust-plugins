@@ -69,7 +69,7 @@ impl nice_plug_egui::NiceEguiApp for Editor {
                             ui,
                             &self.params.path.enabled,
                             param_setter,
-                            "Path Mode",
+                            "Path mode",
                         );
                         if path_enabled {
                             nice_utils::egui::param_slider(
@@ -81,17 +81,12 @@ impl nice_plug_egui::NiceEguiApp for Editor {
                             );
                         }
                     });
-
                     let plot_size = ui.available_width().min(0.9 * ui.available_height());
-                    self.control_plot.add(
-                        ui,
-                        plot_size,
-                        &self.params,
-                        &nice_gui_context.param_setter(),
-                    );
+                    self.control_plot
+                        .draw(ui, plot_size, &self.params, &param_setter);
 
                     ui.horizontal(|ui| {
-                        ui.add(egui::Label::new(format!("Dry Mix")));
+                        ui.add(egui::Label::new(format!("Dry mix")));
                         nice_utils::egui::param_slider(
                             ui,
                             &self.params.dry_gain_db,

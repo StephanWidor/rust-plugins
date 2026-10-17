@@ -15,7 +15,7 @@ impl ControlPlot {
         }
     }
 
-    pub fn add(
+    pub fn draw(
         &mut self,
         ui: &mut egui::Ui,
         plot_size: f32,

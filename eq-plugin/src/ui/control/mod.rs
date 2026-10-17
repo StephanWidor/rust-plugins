@@ -7,7 +7,7 @@ pub mod eqs;
 pub fn add<F: audio_utils::Float + egui::emath::Numeric, const NUM_BANDS: usize>(
     ui: &mut egui::Ui,
     size: egui::Vec2,
-    params: &mut State<F, NUM_BANDS>,
+    ui_state: &mut State<F, NUM_BANDS>,
     presets: &mut presets::Presets<F, NUM_BANDS>,
     settings: &Settings<F>,
     spectrum_available: bool,
@@ -19,23 +19,23 @@ pub fn add<F: audio_utils::Float + egui::emath::Numeric, const NUM_BANDS: usize>
             .min_scrolled_height(size.y)
             .show(ui, |ui| {
                 ui.vertical(|ui| {
-                    add_show_options_controls(ui, &mut params.show_options, spectrum_available);
+                    add_show_options_controls(ui, &mut ui_state.show_options, spectrum_available);
                     eqs::add_preset_controls(
                         ui,
                         control_width,
                         control_outer_margin,
-                        params,
+                        ui_state,
                         presets,
                     );
                     let mut eq_has_changed = false;
                     eq_has_changed |= eqs::add_multiband_type_control(
                         ui,
                         control_outer_margin,
-                        &mut params.multiband_eq.processing_type,
+                        &mut ui_state.multiband_eq.processing_type,
                     );
                     let eq_colors = &settings.color_palette.eq_stroke;
                     let eq_ranges = &settings.eq_ranges;
-                    for (index, eq) in params.multiband_eq.eqs.iter_mut().enumerate() {
+                    for (index, eq) in ui_state.multiband_eq.eqs.iter_mut().enumerate() {
                         eq_has_changed |= eqs::add_slider_controls(
                             ui,
                             control_width,
@@ -46,7 +46,7 @@ pub fn add<F: audio_utils::Float + egui::emath::Numeric, const NUM_BANDS: usize>
                         );
                     }
                     if eq_has_changed {
-                        params.preset_selection.mark_as_changed();
+                        ui_state.preset_selection.mark_as_changed();
                     }
                 });
             });

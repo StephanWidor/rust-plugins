@@ -32,9 +32,6 @@ pub fn add_slider_controls<F: audio_utils::Float + egui::emath::Numeric>(
     eq_ranges: &crate::ui::settings::EqRanges<F>,
     eq: &mut eq::Eq<F>,
 ) -> bool {
-    let mut gain_db = eq.gain.db();
-    let mut log_frequency = eq.frequency.log_hz();
-    let mut makeup_gain_db = eq.makeup_gain.db();
     let mut eq_has_changed = false;
     egui::Frame::group(ui.style())
         .fill(color)
@@ -55,6 +52,7 @@ pub fn add_slider_controls<F: audio_utils::Float + egui::emath::Numeric>(
                     });
 
                 if eq.eq_type.has_frequency() {
+                    let mut log_frequency = eq.frequency.log_hz();
                     let response = ui.add(
                         egui::Slider::new(
                             &mut log_frequency,
@@ -74,6 +72,7 @@ pub fn add_slider_controls<F: audio_utils::Float + egui::emath::Numeric>(
                 }
 
                 if eq.eq_type.has_gain_db() {
+                    let mut gain_db = eq.gain.db();
                     let response = ui.add(
                         egui::Slider::new(&mut gain_db, eq_ranges.db_range.clone())
                             .prefix("gain: ")
@@ -94,6 +93,7 @@ pub fn add_slider_controls<F: audio_utils::Float + egui::emath::Numeric>(
                 }
 
                 if eq.eq_type != eq::EqType::Bypassed {
+                    let mut makeup_gain_db = eq.makeup_gain.db();
                     let response = ui.add(
                         egui::Slider::new(&mut makeup_gain_db, eq_ranges.db_range.clone())
                             .prefix("makeup: ")
