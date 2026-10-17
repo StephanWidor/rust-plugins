@@ -5,7 +5,8 @@ mod private {
 }
 
 pub trait Float:
-    num_traits::Float
+    'static
+    + num_traits::Float
     + num_traits::ConstZero
     + num_traits::ConstOne
     + num_traits::FloatConst
@@ -15,6 +16,7 @@ pub trait Float:
     + serde::Serialize
     + serde::de::DeserializeOwned
     + std::marker::Send
+    + std::marker::Sync
     + private::Sealed
 {
     const TWO: Self;

@@ -15,10 +15,7 @@ pub fn process<'a, F: utils::Float + 'a, Iter: Iterator<Item = &'a mut Filter<F>
     }
 }
 
-pub fn make_frequency_response<
-    F: utils::Float + 'static,
-    C: Iterator<Item = Coefficients<F>> + 'static,
->(
+pub fn make_frequency_response<F: utils::Float, C: Iterator<Item = Coefficients<F>> + 'static>(
     coefficients: C,
     processing_type: ProcessingType,
     sample_rate: F,
