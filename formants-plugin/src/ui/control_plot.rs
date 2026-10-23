@@ -94,7 +94,7 @@ impl ControlPlot {
                         );
                     }
 
-                    let [x, y] = params.get_xy::<f64>();
+                    let [x, y] = params.get_current_xy::<f64>();
                     plot_ui.points(
                         egui_plot::Points::new("F", egui_plot::PlotPoints::from([x, y]))
                             .shape(egui_plot::MarkerShape::Circle)

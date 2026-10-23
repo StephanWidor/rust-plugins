@@ -59,50 +59,87 @@ impl nice_plug_egui::NiceEguiApp for Editor {
         let Some(nice_gui_context) = self.nice_gui_context.as_mut() else {
             return;
         };
+        ui.visuals_mut().handle_shape = egui::style::HandleShape::Circle;
         let param_setter = &nice_gui_context.param_setter();
         egui::Frame::new()
             .inner_margin(egui::Margin::same(20))
             .show(ui, |ui| {
                 ui.vertical(|ui| {
-                    ui.horizontal(|ui| {
-                        let path_enabled = nice_utils::egui::param_checkbox(
-                            ui,
-                            &self.params.path.enabled,
-                            param_setter,
-                            "Path mode",
-                        );
-                        if path_enabled {
-                            nice_utils::egui::param_slider(
-                                ui,
-                                &self.params.path.t,
-                                param_setter,
-                                None,
-                                "",
-                                "",
-                            );
-                        }
-                    });
+                    egui::Frame::group(ui.style())
+                        .corner_radius(5)
+                        .show(ui, |ui| {
+                            egui::Grid::new("path_control_grid").show(ui, |ui| {
+                                let path_enabled = nice_utils::egui::param_checkbox(
+                                    ui,
+                                    &self.params.path.enabled,
+                                    param_setter,
+                                    "Path mode",
+                                );
+                                if path_enabled {
+                                    nice_utils::egui::param_slider(
+                                        ui,
+                                        &self.params.path.t,
+                                        param_setter,
+                                        Some(self.params.path.current_t()),
+                                        "",
+                                        "",
+                                    );
+                                    ui.end_row();
+
+                                    ui.add(egui::Label::new(format!("Modulation")));
+
+                                    ui.vertical(|ui| {
+                                        nice_utils::egui::param_slider(
+                                            ui,
+                                            &self.params.path.t_modulation.wave_length,
+                                            param_setter,
+                                            None,
+                                            "Length: ",
+                                            "s",
+                                        );
+                                        nice_utils::egui::param_slider(
+                                            ui,
+                                            &self.params.path.t_modulation.amplitude,
+                                            param_setter,
+                                            None,
+                                            " Amplitude: ",
+                                            "",
+                                        );
+                                    });
+                                }
+                                ui.end_row();
+                            });
+                        });
+
                     let plot_size = ui.available_width().min(0.9 * ui.available_height());
                     self.control_plot
                         .draw(ui, plot_size, &self.params, &param_setter);
 
                     ui.horizontal(|ui| {
-                        ui.add(egui::Label::new(format!("Dry mix")));
-                        nice_utils::egui::param_slider(
-                            ui,
-                            &self.params.dry_gain_db,
-                            param_setter,
-                            None,
-                            "",
-                            "dB",
-                        );
-                        nice_utils::egui::param_checkbox(
-                            ui,
-                            &self.params.limiter_enabled,
-                            param_setter,
-                            "Limiter",
-                        );
-                    })
+                        egui::Frame::group(ui.style())
+                            .corner_radius(5)
+                            .show(ui, |ui| {
+                                ui.add(egui::Label::new(format!("Dry mix")));
+                                nice_utils::egui::param_slider(
+                                    ui,
+                                    &self.params.dry_gain_db,
+                                    param_setter,
+                                    None,
+                                    "",
+                                    "dB",
+                                );
+                            });
+                        egui::Frame::group(ui.style())
+                            .corner_radius(5)
+                            .show(ui, |ui| {
+                                nice_utils::egui::param_checkbox(
+                                    ui,
+                                    &self.params.limiter_enabled,
+                                    param_setter,
+                                    "Limiter",
+                                );
+                            });
+                    });
                 });
             });
     }

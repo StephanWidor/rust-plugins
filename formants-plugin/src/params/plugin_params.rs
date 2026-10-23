@@ -84,7 +84,7 @@ impl PluginParams {
         ]
     }
 
-    pub fn get_xy<F: audio_lib::utils::Float>(&self) -> [F; 2] {
+    pub fn get_current_xy<F: audio_lib::utils::Float>(&self) -> [F; 2] {
         if self.path.enabled.value() {
             self.path.get_current_point::<F>()
         } else {

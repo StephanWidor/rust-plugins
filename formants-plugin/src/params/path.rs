@@ -1,6 +1,6 @@
-use nalgebra::*;
-
 use super::*;
+use nalgebra::*;
+use std::sync::atomic;
 
 pub const NUM_CONTROL_POINTS: usize = 4;
 
@@ -50,6 +50,9 @@ pub struct Path {
     #[id = "t"]
     pub t: nice::FloatParam,
 
+    #[nested(group = "t modulation")]
+    pub t_modulation: modulation::Modulation,
+
     #[nested(array, group = "control_points")]
     pub control_points: [Point; NUM_CONTROL_POINTS],
 }
@@ -66,6 +69,25 @@ impl Path {
                     max: 1_f32,
                 },
             ),
+            t_modulation: modulation::Modulation {
+                wave_length: nice::FloatParam::new(
+                    "Path t modulation length",
+                    1_f32,
+                    nice::FloatRange::Linear {
+                        min: 0_f32,
+                        max: 5_f32,
+                    },
+                ),
+                amplitude: nice::FloatParam::new(
+                    "Path t modulation amplitude",
+                    0_f32,
+                    nice::FloatRange::Linear {
+                        min: -1_f32,
+                        max: 1_f32,
+                    },
+                ),
+                current: nice::AtomicF32::new(0_f32),
+            },
             control_points: [
                 Point::new(0.1_f32, 0.6_f32, 0),
                 Point::new(0.2_f32, 0_f32, 1),
@@ -76,12 +98,18 @@ impl Path {
     }
 
     pub fn get_current_point<F: audio_lib::utils::Float>(&self) -> [F; 2] {
-        Self::point_from_coefficients_and_t(&self.coefficients_matrix(), self.t.value())
+        Self::point_from_coefficients_and_t(&self.coefficients_matrix(), self.current_t())
     }
 
     pub fn make_function<F: audio_lib::utils::Float>(&self) -> impl Fn(F) -> [F; 2] {
         let coefficients = self.coefficients_matrix();
         move |t: F| Self::point_from_coefficients_and_t(&coefficients, t.cast())
+    }
+
+    pub fn current_t(&self) -> f32 {
+        let range = nice_utils::to_range_inclusive(&self.t.range());
+        (self.t.value() + self.t_modulation.current.load(atomic::Ordering::Relaxed))
+            .clamp(*range.start(), *range.end())
     }
 
     fn point_from_coefficients_and_t<F: audio_lib::utils::Float>(
