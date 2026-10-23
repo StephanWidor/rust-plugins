@@ -76,6 +76,7 @@ impl nice_plug_egui::NiceEguiApp for Editor {
                                 ui,
                                 &self.params.path.t,
                                 param_setter,
+                                None,
                                 "",
                                 "",
                             );
@@ -91,6 +92,7 @@ impl nice_plug_egui::NiceEguiApp for Editor {
                             ui,
                             &self.params.dry_gain_db,
                             param_setter,
+                            None,
                             "",
                             "dB",
                         );
@@ -103,6 +105,5 @@ impl nice_plug_egui::NiceEguiApp for Editor {
                     })
                 });
             });
-        //});
     }
 }

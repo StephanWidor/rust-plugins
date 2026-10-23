@@ -7,3 +7,5 @@ edition = "2024"
 egui = { workspace = true }
 nice-plug = { workspace = true }
 nice-plug-egui = { workspace = true }
+
+egui-utils = { workspace = true }
