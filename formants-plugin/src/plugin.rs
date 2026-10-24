@@ -7,12 +7,15 @@ use std::sync::{self, atomic};
 
 const NUM_CHANNELS: usize = 2;
 type Filter = biquad::filter::Filter<f32>;
+type SineModulation =
+    audio_lib::modulation::Modulation<f32, audio_lib::modulation::SineProcessor<f32>>;
 type ThreeBandFilter = [Filter; 3];
 type Limiter = limiter::SimpleLimiter<limiter::gain::SoftKnee<f32>, 500, f32>;
 
 pub struct Plugin {
     params: sync::Arc<params::PluginParams>,
     repaint_notifier: nice_plug_egui::RepaintNotifier,
+    t_modulation: SineModulation,
     filters: [ThreeBandFilter; NUM_CHANNELS],
     limiters: [Limiter; NUM_CHANNELS],
 }
@@ -22,6 +25,7 @@ impl Plugin {
         Self {
             params: sync::Arc::new(params::PluginParams::new()),
             repaint_notifier: nice_plug_egui::RepaintNotifier::new(),
+            t_modulation: SineModulation::new(),
             filters: std::array::from_fn(|_| {
                 std::array::from_fn(|_| Filter::new(biquad::coefficients::Coefficients::muted()))
             }),
@@ -29,6 +33,13 @@ impl Plugin {
         }
     }
 
+    fn update_modulation_params(&mut self, sample_rate: f32) {
+        self.t_modulation.processor.amplitude = self.params.path.t_modulation.amplitude.value();
+        self.t_modulation.set_wavelength(
+            std::time::Duration::from_secs_f32(self.params.path.t_modulation.wave_length.value()),
+            sample_rate,
+        );
+    }
 }
 
 impl Default for Plugin {
@@ -69,6 +80,9 @@ impl nice::Plugin for Plugin {
         self.params
             .sample_rate
             .store(sample_rate, atomic::Ordering::Relaxed);
+        self.update_modulation_params(sample_rate);
+        self.t_modulation
+            .reset_current_phase(std::time::Duration::ZERO);
         for filters in self.filters.iter_mut() {
             for filter in filters.iter_mut() {
                 filter.reset_state();
@@ -87,23 +101,30 @@ impl nice::Plugin for Plugin {
         _aux: &mut nice::AuxiliaryBuffers,
         _context: &mut impl nice::ProcessContext<Self>,
     ) -> nice::ProcessStatus {
-        assert!(buffer.channels() <= NUM_CHANNELS);
-        let buffer_slice = buffer.as_slice();
-        let coefficients = self.params.get_multiband_coefficients();
-        let limiter_enabled = self.params.limiter_enabled.value();
-        for channel in 0..buffer_slice.len() {
-            let channel_samples = buffer_slice.get_mut(channel).unwrap();
-            let filters = &mut self.filters[channel];
-            for (filter, c) in filters.iter_mut().zip(coefficients.iter()) {
-                filter.set_coefficients(c.clone(), false);
+        assert!(buffer.channels() == NUM_CHANNELS);
+        for frame in buffer.iter_samples() {
+            if self.params.path.enabled.value() {
+                self.update_modulation_params(
+                    self.params.sample_rate.load(atomic::Ordering::Relaxed),
+                );
+                self.params
+                    .path
+                    .t_modulation
+                    .current
+                    .store(self.t_modulation.tick(), atomic::Ordering::Relaxed);
+                self.repaint_notifier.request_repaint();
             }
-            for sample in (*channel_samples).iter_mut() {
-                *sample = biquad::multiband::parallel_sum::process(filters.iter_mut(), *sample);
-            }
+            let coefficients = self.params.get_multiband_coefficients();
+            let limiter_enabled = self.params.limiter_enabled.value();
 
-            let limiter = &mut self.limiters[channel];
-            limiter.set_enabled(limiter_enabled);
-            for sample in (*channel_samples).iter_mut() {
+            for (channel, sample) in frame.into_iter().enumerate() {
+                let filters = &mut self.filters[channel];
+                for (filter, c) in filters.iter_mut().zip(coefficients.iter()) {
+                    filter.set_coefficients(c.clone(), false);
+                }
+                *sample = biquad::multiband::parallel_sum::process(filters.iter_mut(), *sample);
+                let limiter = &mut self.limiters[channel];
+                limiter.set_enabled(limiter_enabled);
                 *sample = limiter.process(*sample);
             }
         }

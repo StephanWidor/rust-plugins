@@ -1,4 +1,5 @@
 pub mod frequency_transform;
+pub mod modulation;
 pub mod path;
 pub mod plugin_params;
 

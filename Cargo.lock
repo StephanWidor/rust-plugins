@@ -960,6 +960,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "egui-utils"
+version = "0.1.0"
+dependencies = [
+ "egui",
+ "egui_plot",
+]
+
+[[package]]
 name = "egui_glow"
 version = "0.36.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1223,6 +1231,7 @@ dependencies = [
  "audio-lib",
  "dirs 7.0.0",
  "egui",
+ "egui-utils",
  "egui_plot",
  "enum-table",
  "nalgebra",
@@ -2029,6 +2038,7 @@ name = "nice-utils"
 version = "0.1.0"
 dependencies = [
  "egui",
+ "egui-utils",
  "nice-plug",
  "nice-plug-egui",
 ]
