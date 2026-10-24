@@ -18,22 +18,32 @@ impl ControlPlot {
     pub fn draw(
         &mut self,
         ui: &mut egui::Ui,
-        plot_size: f32,
+        size: impl Into<egui::Vec2>,
+        outer_margin: i8,
+        corner_radius: u8,
         params: &params::PluginParams,
         setter: &nice::ParamSetter<'_>,
     ) {
+        let size = size.into();
+        ui.set_min_size(size);
+        ui.set_max_size(size);
+
+        let path_color = ui.visuals().weak_text_color();
+        let gain_response_color = path_color.gamma_multiply_u8(32);
+
         egui::Frame::group(ui.style())
-            .corner_radius(5)
+            .corner_radius(corner_radius)
+            .inner_margin(0)
+            .outer_margin(outer_margin)
             .show(ui, |ui| {
                 let plot = egui_plot::Plot::new("Formant Space")
                     .allow_zoom(false)
                     .allow_drag(false)
                     .allow_scroll(false)
-                    .width(plot_size)
-                    .height(plot_size)
                     .show_background(false)
                     .show_axes(false)
                     .show_grid(false)
+                    .show_crosshair(false)
                     .label_formatter(|hover_position| match hover_position {
                         egui_plot::HoverPosition::NearDataPoint {
                             plot_name: _,
@@ -83,22 +93,19 @@ impl ControlPlot {
                     );
                     plot_ui.line(
                         egui_plot::Line::new("gain response", gain_points)
-                            .color(egui::Color32::from_rgba_unmultiplied(255, 165, 0, 32)),
+                            .color(gain_response_color),
                     );
 
                     if params.path.enabled.value() {
                         let path_points = make_path_points(&params.path);
-                        plot_ui.line(
-                            egui_plot::Line::new("path", path_points)
-                                .color(egui::Color32::from_rgba_unmultiplied(255, 255, 0, 32)),
-                        );
+                        plot_ui.line(egui_plot::Line::new("path", path_points).color(path_color));
                     }
 
                     let [x, y] = params.get_current_xy::<f64>();
                     plot_ui.points(
                         egui_plot::Points::new("F", egui_plot::PlotPoints::from([x, y]))
                             .shape(egui_plot::MarkerShape::Circle)
-                            .color(egui::Color32::ORANGE)
+                            .color(egui::Color32::from_rgb(140, 51, 51))
                             .filled(true)
                             .radius(5.0)
                             .allow_hover(!params.path.enabled.value()),
@@ -115,7 +122,7 @@ impl ControlPlot {
                                 )
                                 .id(control_point_ids[i])
                                 .shape(egui_plot::MarkerShape::Circle)
-                                .color(egui::Color32::from_rgba_unmultiplied(255, 255, 0, 32))
+                                .color(path_color)
                                 .filled(true)
                                 .radius(4.0),
                             );

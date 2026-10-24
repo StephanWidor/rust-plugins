@@ -1,3 +1,5 @@
+use ::egui::InnerResponse;
+
 use super::*;
 
 pub fn param_slider(
@@ -7,7 +9,7 @@ pub fn param_slider(
     modulated_value: Option<f32>,
     prefix: &str,
     suffix: &str,
-) -> f32 {
+) -> ::egui::InnerResponse<f32> {
     let mut value = param.value();
     let mut slider =
         egui_utils::custom::Slider::new(&mut value, to_range_inclusive(&param.range()))
@@ -20,7 +22,11 @@ pub fn param_slider(
     if response.changed() {
         set_param(param, value, param_setter);
     }
-    value
+    InnerResponse {
+        response: response,
+        inner: value,
+    }
+    //value
 }
 
 pub fn param_checkbox(
@@ -28,10 +34,14 @@ pub fn param_checkbox(
     param: &BoolParam,
     param_setter: &ParamSetter<'_>,
     text: &str,
-) -> bool {
+) -> ::egui::InnerResponse<bool> {
     let mut value = param.value();
-    if ui.checkbox(&mut value, text).clicked() {
+    let response = ui.checkbox(&mut value, text);
+    if response.clicked() {
         set_param(param, value, param_setter);
     }
-    value
+    ::egui::InnerResponse {
+        response: response,
+        inner: value,
+    }
 }

@@ -1231,6 +1231,7 @@ dependencies = [
  "audio-lib",
  "dirs 7.0.0",
  "egui",
+ "egui-utils",
  "egui_plot",
  "enum-table",
  "nalgebra",

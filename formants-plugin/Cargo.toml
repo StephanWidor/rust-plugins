@@ -25,4 +25,5 @@ serde = { workspace = true }
 serde_arrays = { workspace = true }
 
 audio-lib = { workspace = true }
+egui-utils = { workspace = true }
 nice-utils = { workspace = true }
