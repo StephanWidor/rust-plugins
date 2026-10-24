@@ -90,6 +90,8 @@ impl<const NUM_BANDS: usize, const NUM_CHANNELS: usize, const ANALYZER_NUM_BINS:
             return;
         };
 
+        ui.visuals_mut().handle_shape = egui::style::HandleShape::Circle;
+
         egui::Frame::new()
             .inner_margin(egui::Margin::same(20))
             .show(ui, |ui| {
