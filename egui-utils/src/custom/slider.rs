@@ -966,6 +966,11 @@ impl Slider<'_> {
         right_value - left_value
     }
 
+    pub fn thickness(ui: &Ui) -> f32 {
+        ui.text_style_height(&TextStyle::Body)
+            .at_least(ui.spacing().interact_size.y)
+    }
+
     fn add_contents(&mut self, ui: &mut Ui) -> Response {
         let old_value = self.get_value();
 
@@ -973,10 +978,7 @@ impl Slider<'_> {
             self.set_value(old_value);
         }
 
-        let thickness = ui
-            .text_style_height(&TextStyle::Body)
-            .at_least(ui.spacing().interact_size.y);
-        let mut response = self.allocate_slider_space(ui, thickness);
+        let mut response = self.allocate_slider_space(ui, Self::thickness(ui));
         self.slider_ui(ui, &response);
 
         let value = self.get_value();
