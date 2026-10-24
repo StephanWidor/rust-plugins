@@ -74,7 +74,7 @@ impl Path {
                     "Path t modulation length",
                     1_f32,
                     nice::FloatRange::Linear {
-                        min: 0_f32,
+                        min: 0.1_f32,
                         max: 5_f32,
                     },
                 ),
