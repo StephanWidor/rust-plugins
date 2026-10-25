@@ -3,7 +3,7 @@ use egui::ecolor;
 use nice_plug::{context::gui::GuiContext, editor::*};
 use std::sync;
 
-pub const INITIAL_WINDOW_SIZE: dpi::LogicalSize<f32> = dpi::LogicalSize::new(500.0, 600.0);
+pub const INITIAL_WINDOW_SIZE: dpi::LogicalSize<f32> = dpi::LogicalSize::new(480.0, 640.0);
 pub const MIN_WINDOW_SIZE: dpi::LogicalSize<f32> = dpi::LogicalSize::new(300.0, 300.0);
 pub const RESIZE_HINT: ResizeHint = ResizeHint::resizable().with_min_logical_size(MIN_WINDOW_SIZE);
 pub const ZOOM_FACTOR: f32 = 1.0;
@@ -120,76 +120,94 @@ fn add_path_ui(
             let available_size = ui.available_size();
             ui.set_min_width(available_size.x);
             ui.horizontal(|ui| {
-                let mut path_enabled = false;
+                let path_enabled = ui
+                    .vertical(|ui| {
+                        let path_enabled = ui
+                            .horizontal(|ui| {
+                                let path_enabled = nice_utils::egui::param_checkbox(
+                                    ui,
+                                    &params.path.enabled,
+                                    param_setter,
+                                    "",
+                                )
+                                .inner;
+                                ui.add(egui::Label::new(format!("Path")));
+                                path_enabled
+                            })
+                            .inner;
 
-                ui.vertical(|ui| {
-                    ui.horizontal(|ui| {
-                        path_enabled = nice_utils::egui::param_checkbox(
-                            ui,
-                            &params.path.enabled,
-                            param_setter,
-                            "",
-                        )
-                        .inner;
-                        ui.add(egui::Label::new(format!("Path")));
-                    });
-
-                    if path_enabled {
-                        nice_utils::egui::param_slider(
-                            ui,
-                            &params.path.t,
-                            param_setter,
-                            Some(params.path.current_t()),
-                            "",
-                            "",
-                        );
-                    }
-                });
+                        if path_enabled {
+                            nice_utils::egui::param_slider(
+                                ui,
+                                &params.path.t,
+                                param_setter,
+                                Some(params.path.current_t()),
+                                "",
+                                "",
+                            );
+                        }
+                        path_enabled
+                    })
+                    .inner;
                 if path_enabled {
                     ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
                         let t_modulation = &params.path.t_modulation;
-                        ui.add(egui::Label::new(format!("Modulation")));
-                        ui.horizontal(|ui| {
-                            nice_utils::egui::param_slider(
-                                ui,
-                                &t_modulation.amplitude,
-                                param_setter,
-                                None,
-                                "",
-                                "",
-                            );
-                            ui.add(egui::Label::new(format!("Amplitude ")));
-                        });
-                        ui.horizontal(|ui| {
-                            match t_modulation.length_unit.value() {
-                                params::modulation::LengthUnit::Note => {
-                                    nice_utils::egui::param_ratio_control(
-                                        ui,
-                                        &t_modulation.length_in_notes.numerator,
-                                        &t_modulation.length_in_notes.denominator,
-                                        param_setter,
-                                        0.1,
-                                    );
-                                    ui.add_space(47_f32);
+                        let modulation_enabled = ui
+                            .horizontal(|ui| {
+                                let modulation_enabled = nice_utils::egui::param_checkbox(
+                                    ui,
+                                    &t_modulation.enabled,
+                                    param_setter,
+                                    "",
+                                )
+                                .inner;
+                                ui.add(egui::Label::new(format!("Modulation")));
+                                modulation_enabled
+                            })
+                            .inner;
+                        if modulation_enabled {
+                            ui.horizontal(|ui| {
+                                nice_utils::egui::param_slider(
+                                    ui,
+                                    &t_modulation.amplitude,
+                                    param_setter,
+                                    None,
+                                    "",
+                                    "",
+                                );
+                                ui.add(egui::Label::new(format!("Amplitude ")));
+                            });
+                            ui.horizontal(|ui| {
+                                match t_modulation.length_unit.value() {
+                                    params::modulation::LengthUnit::Note => {
+                                        nice_utils::egui::param_ratio_control(
+                                            ui,
+                                            &t_modulation.length_in_notes.numerator,
+                                            &t_modulation.length_in_notes.denominator,
+                                            param_setter,
+                                            0.1,
+                                        );
+                                        ui.add_space(47_f32);
+                                    }
+                                    params::modulation::LengthUnit::Seconds => {
+                                        nice_utils::egui::param_slider(
+                                            ui,
+                                            &t_modulation.length_in_seconds,
+                                            param_setter,
+                                            None,
+                                            "",
+                                            "s",
+                                        );
+                                    }
                                 }
-                                params::modulation::LengthUnit::Seconds => {
-                                    nice_utils::egui::param_slider(
-                                        ui,
-                                        &t_modulation.length_in_seconds,
-                                        param_setter,
-                                        None,
-                                        "",
-                                        "s",
-                                    );
-                                }
-                            }
-                            nice_utils::egui::param_combo_box(
-                                ui,
-                                50_f32,
-                                &t_modulation.length_unit,
-                                param_setter,
-                            );
-                        });
+                                nice_utils::egui::param_combo_box(
+                                    ui,
+                                    50_f32,
+                                    &t_modulation.length_unit,
+                                    param_setter,
+                                );
+                            });
+                        }
                     });
                 }
             });

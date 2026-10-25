@@ -3,6 +3,9 @@ use enum_table::Enumerable;
 
 #[derive(nice::Params)]
 pub struct Modulation {
+    #[id = "Modulation Enabled"]
+    pub enabled: nice::BoolParam,
+
     #[id = "Amplitude"]
     pub amplitude: nice::FloatParam,
 
@@ -22,6 +25,7 @@ impl Modulation {
     pub fn default_with_name_prefix(prefix: &str) -> Self {
         let common_prefix = format!("{prefix}modulation ");
         Self {
+            enabled: nice::BoolParam::new(format!("{common_prefix}enabled"), false),
             amplitude: nice::FloatParam::new(
                 format!("{common_prefix}amplitude"),
                 0_f32,

@@ -35,7 +35,7 @@ impl Plugin {
 
     fn process_modulation(&mut self, bpm: Option<f64>) {
         let params = &self.params.path.t_modulation;
-        if !self.params.path.enabled.value() || params.amplitude.value() == 0_f32 {
+        if !self.params.path.enabled.value() || !params.enabled.value() {
             params.current_value.store(0_f32, atomic::Ordering::Relaxed);
             return;
         }
