@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 egui = { workspace = true }
 egui_plot = { workspace = true }
+num = { workspace = true }
