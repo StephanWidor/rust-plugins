@@ -67,9 +67,6 @@ pub fn is_power_of_two(i: usize) -> bool {
     i != 0 && (i & (i - 1)) == 0
 }
 
-#[allow(type_alias_bounds)]
-pub type PolynomRoots<F: Float> = smallvec::SmallVec<[num::Complex<F>; 2]>;
-
 pub fn frequency_to_log<F: Float>(frequency: F) -> F {
     if frequency > F::ZERO {
         F::log10(frequency)
@@ -100,6 +97,17 @@ pub fn db_to_amplitude<F: Float>(db: F) -> F {
     } else {
         F::TEN.powf(db * F::ONE_TWENTIETH)
     }
+}
+
+pub fn note_length_to_duration(
+    note_length: num::rational::Ratio<u16>,
+    bpm: f64,
+) -> std::time::Duration {
+    use num::ToPrimitive;
+    assert!(*note_length.denom() > 0);
+    assert!(bpm > 0.0);
+    let secs_f64 = (240.0 / bpm) * note_length.to_f64().unwrap();
+    std::time::Duration::from_secs_f64(secs_f64)
 }
 
 pub fn omega<F: Float>(frequency: F, sample_rate: F) -> F {
@@ -143,6 +151,9 @@ pub fn make_phase_response<F: Float>(
 ) -> impl Fn(F) -> F {
     move |frequency| complex_frequency_response(frequency).arg()
 }
+
+#[allow(type_alias_bounds)]
+pub type PolynomRoots<F: Float> = smallvec::SmallVec<[num::Complex<F>; 2]>;
 
 /// complex roots of polynom c2*x^2 + c1*x + c0
 pub fn polynom_roots<F: Float>(c2: F, c1: F, c0: F) -> PolynomRoots<F> {
