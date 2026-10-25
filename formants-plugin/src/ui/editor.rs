@@ -237,7 +237,6 @@ fn add_dry_gain_and_limiter_ui(
             ui.set_min_width(available_size.x);
             ui.horizontal(|ui| {
                 ui.vertical(|ui| {
-                    ui.add(egui::Label::new(format!("Dry mix")));
                     nice_utils::egui::param_slider(
                         ui,
                         &params.dry_gain_db,
@@ -246,8 +245,9 @@ fn add_dry_gain_and_limiter_ui(
                         "",
                         "dB",
                     );
+                    ui.add(egui::Label::new(format!("Dry mix")));
                 });
-                ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
+                ui.with_layout(egui::Layout::bottom_up(egui::Align::RIGHT), |ui| {
                     ui.horizontal(|ui| {
                         nice_utils::egui::param_checkbox(
                             ui,
