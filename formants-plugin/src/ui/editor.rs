@@ -64,7 +64,7 @@ impl nice_plug_egui::NiceEguiApp for Editor {
         ui.visuals_mut().handle_shape = egui::style::HandleShape::Circle;
         let param_setter = &nice_gui_context.param_setter();
         let corner_radius = 5;
-        let margin_width = 5;
+        let margin_width = 10;
         egui::Frame::new()
             .inner_margin(0)
             .outer_margin(0)
