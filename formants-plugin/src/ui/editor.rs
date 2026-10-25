@@ -80,10 +80,8 @@ impl nice_plug_egui::NiceEguiApp for Editor {
 
                     ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                         let plot_height = ui.available_height()
-                            - egui_utils::custom::Slider::thickness(ui)
-                            - 4_f32 * margin_width as f32
-                            - 2_f32
-                            - 2_f32 * ui.spacing().item_spacing.y;
+                            - estimated_dry_gain_and_limiter_ui_height(ui, margin_width)
+                            - ui.spacing().item_spacing.y;
                         let plot_side_length = ui.available_width().min(plot_height);
                         self.control_plot.draw(
                             ui,
@@ -122,22 +120,21 @@ fn add_path_ui(
             let available_size = ui.available_size();
             ui.set_min_width(available_size.x);
             ui.horizontal(|ui| {
-                let path_enabled =
-                    nice_utils::egui::param_checkbox(ui, &params.path.enabled, param_setter, "")
-                        .inner;
+                let mut path_enabled = false;
+
                 ui.vertical(|ui| {
-                    ui.add(egui::Label::new(format!("Path mode")));
+                    ui.horizontal(|ui| {
+                        path_enabled = nice_utils::egui::param_checkbox(
+                            ui,
+                            &params.path.enabled,
+                            param_setter,
+                            "",
+                        )
+                        .inner;
+                        ui.add(egui::Label::new(format!("Path")));
+                    });
+
                     if path_enabled {
-                        ui.add_space(egui_utils::custom::Slider::thickness(ui));
-                        ui.add(egui::Label::new(format!("Modulation")));
-                    }
-                })
-                .response
-                .rect
-                .right();
-                if path_enabled {
-                    ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
-                        let t_modulation = &params.path.t_modulation;
                         nice_utils::egui::param_slider(
                             ui,
                             &params.path.t,
@@ -146,6 +143,12 @@ fn add_path_ui(
                             "",
                             "",
                         );
+                    }
+                });
+                if path_enabled {
+                    ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
+                        let t_modulation = &params.path.t_modulation;
+                        ui.add(egui::Label::new(format!("Modulation")));
                         ui.horizontal(|ui| {
                             nice_utils::egui::param_slider(
                                 ui,
@@ -155,7 +158,7 @@ fn add_path_ui(
                                 "",
                                 "",
                             );
-                            ui.add(egui::Label::new(format!("Amplitude:")));
+                            ui.add(egui::Label::new(format!("Amplitude ")));
                         });
                         ui.horizontal(|ui| {
                             match t_modulation.length_unit.value() {
@@ -193,6 +196,13 @@ fn add_path_ui(
         });
 }
 
+fn estimated_dry_gain_and_limiter_ui_height(ui: &egui::Ui, margin_width: i8) -> f32 {
+    2_f32 * egui_utils::custom::Slider::thickness(ui)
+        + 4_f32 * margin_width as f32
+        + 2_f32
+        + ui.spacing().item_spacing.y
+}
+
 fn add_dry_gain_and_limiter_ui(
     ui: &mut egui::Ui,
     corner_radius: u8,
@@ -208,32 +218,28 @@ fn add_dry_gain_and_limiter_ui(
             let available_size = ui.available_size();
             ui.set_min_width(available_size.x);
             ui.horizontal(|ui| {
-                ui.add(egui::Label::new(format!("Dry mix")));
-                nice_utils::egui::param_slider(
-                    ui,
-                    &params.dry_gain_db,
-                    param_setter,
-                    None,
-                    "",
-                    "dB",
-                )
-                .response
-                .rect
-                .right();
+                ui.vertical(|ui| {
+                    ui.add(egui::Label::new(format!("Dry mix")));
+                    nice_utils::egui::param_slider(
+                        ui,
+                        &params.dry_gain_db,
+                        param_setter,
+                        None,
+                        "",
+                        "dB",
+                    );
+                });
                 ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
                     ui.horizontal(|ui| {
-                        ui.add(egui::Label::new(format!("Limiter")));
                         nice_utils::egui::param_checkbox(
                             ui,
                             &params.limiter_enabled,
                             param_setter,
                             "",
                         );
+                        ui.add(egui::Label::new(format!("Limiter")));
                     });
                 });
-            })
-            .response
-            .rect
-            .height();
+            });
         });
 }
