@@ -2042,6 +2042,7 @@ dependencies = [
  "egui-utils",
  "nice-plug",
  "nice-plug-egui",
+ "num",
 ]
 
 [[package]]

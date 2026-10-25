@@ -42,3 +42,7 @@ pub fn set_params<P: Param, V: Into<P::Plain>, const NUM: usize>(
 pub fn to_range_inclusive(float_range: &FloatRange) -> std::ops::RangeInclusive<f32> {
     float_range.unnormalize(0_f32)..=float_range.unnormalize(1_f32)
 }
+
+pub fn to_range_inclusive_int(int_range: &IntRange) -> std::ops::RangeInclusive<i32> {
+    int_range.unnormalize(0_f32)..=int_range.unnormalize(1_f32)
+}
