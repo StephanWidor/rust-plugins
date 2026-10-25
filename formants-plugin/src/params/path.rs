@@ -69,25 +69,7 @@ impl Path {
                     max: 1_f32,
                 },
             ),
-            t_modulation: modulation::Modulation {
-                wave_length: nice::FloatParam::new(
-                    "Path t modulation length",
-                    1_f32,
-                    nice::FloatRange::Linear {
-                        min: 0.1_f32,
-                        max: 5_f32,
-                    },
-                ),
-                amplitude: nice::FloatParam::new(
-                    "Path t modulation amplitude",
-                    0_f32,
-                    nice::FloatRange::Linear {
-                        min: -1_f32,
-                        max: 1_f32,
-                    },
-                ),
-                current: nice::AtomicF32::new(0_f32),
-            },
+            t_modulation: modulation::Modulation::default_with_name_prefix("Path t "),
             control_points: [
                 Point::new(0.1_f32, 0.6_f32, 0),
                 Point::new(0.2_f32, 0_f32, 1),
@@ -108,8 +90,12 @@ impl Path {
 
     pub fn current_t(&self) -> f32 {
         let range = nice_utils::to_range_inclusive(&self.t.range());
-        (self.t.value() + self.t_modulation.current.load(atomic::Ordering::Relaxed))
-            .clamp(*range.start(), *range.end())
+        (self.t.value()
+            + self
+                .t_modulation
+                .current_value
+                .load(atomic::Ordering::Relaxed))
+        .clamp(*range.start(), *range.end())
     }
 
     fn point_from_coefficients_and_t<F: audio_lib::utils::Float>(

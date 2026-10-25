@@ -33,12 +33,35 @@ impl Plugin {
         }
     }
 
-    fn update_modulation_params(&mut self, sample_rate: f32) {
-        self.t_modulation.processor.amplitude = self.params.path.t_modulation.amplitude.value();
+    fn process_modulation(&mut self, bpm: Option<f64>) {
+        let params = &self.params.path.t_modulation;
+        if !self.params.path.enabled.value() || params.amplitude.value() == 0_f32 {
+            params.current_value.store(0_f32, atomic::Ordering::Relaxed);
+            return;
+        }
+        self.t_modulation.processor.amplitude = params.amplitude.value();
+        let modulation_length = match self.params.path.t_modulation.length_unit.value() {
+            params::modulation::LengthUnit::Note => utils::note_length_to_duration(
+                num::rational::Ratio::new(
+                    params.length_in_notes.numerator.value() as u16,
+                    params.length_in_notes.denominator.value() as u16,
+                ),
+                bpm.unwrap_or(120.0),
+            ),
+            params::modulation::LengthUnit::Seconds => {
+                std::time::Duration::from_secs_f32(params.length_in_seconds.value())
+            }
+        };
         self.t_modulation.set_wavelength(
-            std::time::Duration::from_secs_f32(self.params.path.t_modulation.wave_length.value()),
-            sample_rate,
+            modulation_length,
+            self.params.sample_rate.load(atomic::Ordering::Relaxed),
         );
+        self.params
+            .path
+            .t_modulation
+            .current_value
+            .store(self.t_modulation.tick(), atomic::Ordering::Relaxed);
+        self.repaint_notifier.request_repaint();
     }
 }
 
@@ -80,7 +103,6 @@ impl nice::Plugin for Plugin {
         self.params
             .sample_rate
             .store(sample_rate, atomic::Ordering::Relaxed);
-        self.update_modulation_params(sample_rate);
         self.t_modulation
             .reset_current_phase(std::time::Duration::ZERO);
         for filters in self.filters.iter_mut() {
@@ -99,21 +121,11 @@ impl nice::Plugin for Plugin {
         &mut self,
         buffer: &mut nice::Buffer,
         _aux: &mut nice::AuxiliaryBuffers,
-        _context: &mut impl nice::ProcessContext<Self>,
+        context: &mut impl nice::ProcessContext<Self>,
     ) -> nice::ProcessStatus {
         assert!(buffer.channels() == NUM_CHANNELS);
         for frame in buffer.iter_samples() {
-            if self.params.path.enabled.value() {
-                self.update_modulation_params(
-                    self.params.sample_rate.load(atomic::Ordering::Relaxed),
-                );
-                self.params
-                    .path
-                    .t_modulation
-                    .current
-                    .store(self.t_modulation.tick(), atomic::Ordering::Relaxed);
-                self.repaint_notifier.request_repaint();
-            }
+            self.process_modulation(context.transport().tempo);
             let coefficients = self.params.get_multiband_coefficients();
             let limiter_enabled = self.params.limiter_enabled.value();
 

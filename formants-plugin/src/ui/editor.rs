@@ -70,70 +70,13 @@ impl nice_plug_egui::NiceEguiApp for Editor {
             .outer_margin(0)
             .show(ui, |ui| {
                 ui.vertical(|ui| {
-                    egui::Frame::group(ui.style())
-                        .corner_radius(corner_radius)
-                        .inner_margin(margin_width)
-                        .outer_margin(margin_width)
-                        .show(ui, |ui| {
-                            let available_size = ui.available_size();
-                            ui.set_min_width(available_size.x);
-                            ui.horizontal(|ui| {
-                                let path_enabled = nice_utils::egui::param_checkbox(
-                                    ui,
-                                    &self.params.path.enabled,
-                                    param_setter,
-                                    "",
-                                )
-                                .inner;
-                                ui.vertical(|ui| {
-                                    ui.add(egui::Label::new(format!("Path mode")));
-                                    if path_enabled {
-                                        ui.add_space(egui_utils::custom::Slider::thickness(ui));
-                                        ui.add(egui::Label::new(format!("Modulation")));
-                                    }
-                                })
-                                .response
-                                .rect
-                                .right();
-                                if path_enabled {
-                                    ui.with_layout(
-                                        egui::Layout::top_down(egui::Align::RIGHT),
-                                        |ui| {
-                                            nice_utils::egui::param_slider(
-                                                ui,
-                                                &self.params.path.t,
-                                                param_setter,
-                                                Some(self.params.path.current_t()),
-                                                "",
-                                                "",
-                                            );
-                                            ui.horizontal(|ui| {
-                                                nice_utils::egui::param_slider(
-                                                    ui,
-                                                    &self.params.path.t_modulation.wave_length,
-                                                    param_setter,
-                                                    None,
-                                                    "",
-                                                    "s",
-                                                );
-                                                ui.add(egui::Label::new(format!("Length:")));
-                                            });
-                                            ui.horizontal(|ui| {
-                                                nice_utils::egui::param_slider(
-                                                    ui,
-                                                    &self.params.path.t_modulation.amplitude,
-                                                    param_setter,
-                                                    None,
-                                                    "",
-                                                    "",
-                                                );
-                                                ui.add(egui::Label::new(format!("Amplitude:")));
-                                            });
-                                        },
-                                    );
-                                }
-                            });
-                        });
+                    add_path_ui(
+                        ui,
+                        corner_radius,
+                        margin_width,
+                        self.params.as_ref(),
+                        param_setter,
+                    );
 
                     ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
                         let plot_height = ui.available_height()
@@ -152,43 +95,145 @@ impl nice_plug_egui::NiceEguiApp for Editor {
                         );
                     });
 
-                    egui::Frame::group(ui.style())
-                        .corner_radius(corner_radius)
-                        .inner_margin(margin_width)
-                        .outer_margin(margin_width)
-                        .show(ui, |ui| {
-                            let available_size = ui.available_size();
-                            ui.set_min_width(available_size.x);
-                            ui.horizontal(|ui| {
-                                ui.add(egui::Label::new(format!("Dry mix")));
-                                nice_utils::egui::param_slider(
-                                    ui,
-                                    &self.params.dry_gain_db,
-                                    param_setter,
-                                    None,
-                                    "",
-                                    "dB",
-                                )
-                                .response
-                                .rect
-                                .right();
-                                ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
-                                    ui.horizontal(|ui| {
-                                        ui.add(egui::Label::new(format!("Limiter")));
-                                        nice_utils::egui::param_checkbox(
-                                            ui,
-                                            &self.params.limiter_enabled,
-                                            param_setter,
-                                            "",
-                                        );
-                                    });
-                                });
-                            })
-                            .response
-                            .rect
-                            .height();
-                        });
+                    add_dry_gain_and_limiter_ui(
+                        ui,
+                        corner_radius,
+                        margin_width,
+                        self.params.as_ref(),
+                        param_setter,
+                    );
                 });
             });
     }
+}
+
+fn add_path_ui(
+    ui: &mut egui::Ui,
+    corner_radius: u8,
+    margin_width: i8,
+    params: &params::PluginParams,
+    param_setter: &nice::ParamSetter<'_>,
+) {
+    egui::Frame::group(ui.style())
+        .corner_radius(corner_radius)
+        .inner_margin(margin_width)
+        .outer_margin(margin_width)
+        .show(ui, |ui| {
+            let available_size = ui.available_size();
+            ui.set_min_width(available_size.x);
+            ui.horizontal(|ui| {
+                let path_enabled =
+                    nice_utils::egui::param_checkbox(ui, &params.path.enabled, param_setter, "")
+                        .inner;
+                ui.vertical(|ui| {
+                    ui.add(egui::Label::new(format!("Path mode")));
+                    if path_enabled {
+                        ui.add_space(egui_utils::custom::Slider::thickness(ui));
+                        ui.add(egui::Label::new(format!("Modulation")));
+                    }
+                })
+                .response
+                .rect
+                .right();
+                if path_enabled {
+                    ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
+                        let t_modulation = &params.path.t_modulation;
+                        nice_utils::egui::param_slider(
+                            ui,
+                            &params.path.t,
+                            param_setter,
+                            Some(params.path.current_t()),
+                            "",
+                            "",
+                        );
+                        ui.horizontal(|ui| {
+                            nice_utils::egui::param_slider(
+                                ui,
+                                &t_modulation.amplitude,
+                                param_setter,
+                                None,
+                                "",
+                                "",
+                            );
+                            ui.add(egui::Label::new(format!("Amplitude:")));
+                        });
+                        ui.horizontal(|ui| {
+                            match t_modulation.length_unit.value() {
+                                params::modulation::LengthUnit::Note => {
+                                    nice_utils::egui::param_ratio_control(
+                                        ui,
+                                        &t_modulation.length_in_notes.numerator,
+                                        &t_modulation.length_in_notes.denominator,
+                                        param_setter,
+                                        0.1,
+                                    );
+                                    ui.add_space(47_f32);
+                                }
+                                params::modulation::LengthUnit::Seconds => {
+                                    nice_utils::egui::param_slider(
+                                        ui,
+                                        &t_modulation.length_in_seconds,
+                                        param_setter,
+                                        None,
+                                        "",
+                                        "s",
+                                    );
+                                }
+                            }
+                            nice_utils::egui::param_combo_box(
+                                ui,
+                                50_f32,
+                                &t_modulation.length_unit,
+                                param_setter,
+                            );
+                        });
+                    });
+                }
+            });
+        });
+}
+
+fn add_dry_gain_and_limiter_ui(
+    ui: &mut egui::Ui,
+    corner_radius: u8,
+    margin_width: i8,
+    params: &params::PluginParams,
+    param_setter: &nice::ParamSetter<'_>,
+) {
+    egui::Frame::group(ui.style())
+        .corner_radius(corner_radius)
+        .inner_margin(margin_width)
+        .outer_margin(margin_width)
+        .show(ui, |ui| {
+            let available_size = ui.available_size();
+            ui.set_min_width(available_size.x);
+            ui.horizontal(|ui| {
+                ui.add(egui::Label::new(format!("Dry mix")));
+                nice_utils::egui::param_slider(
+                    ui,
+                    &params.dry_gain_db,
+                    param_setter,
+                    None,
+                    "",
+                    "dB",
+                )
+                .response
+                .rect
+                .right();
+                ui.with_layout(egui::Layout::top_down(egui::Align::RIGHT), |ui| {
+                    ui.horizontal(|ui| {
+                        ui.add(egui::Label::new(format!("Limiter")));
+                        nice_utils::egui::param_checkbox(
+                            ui,
+                            &params.limiter_enabled,
+                            param_setter,
+                            "",
+                        );
+                    });
+                });
+            })
+            .response
+            .rect
+            .height();
+        });
 }
